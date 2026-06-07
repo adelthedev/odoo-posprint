@@ -1,5 +1,3 @@
-Odoo database manager password: 265x-qjbr-h8fn
-
 Maind DB:
 db name: afghandishdb
 username/email: sayedmansoor420@gmail.com
