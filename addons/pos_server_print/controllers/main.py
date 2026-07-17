@@ -85,7 +85,7 @@ class PosServerPrintController(Controller):
         if printer.company_id and printer.company_id not in env.user.company_ids:
             raise AccessError(_("You are not allowed to use this printer."))
         configs = printer.pos_config_ids | env['pos.config'].sudo().search(
-            [('server_receipt_printer_id', '=', printer.id)])
+            [('server_receipt_printer_ids', 'in', printer.ids)])
         session = env['pos.session'].sudo().search(
             [('config_id', 'in', configs.ids), ('state', 'in', OPEN_SESSION_STATES)],
             limit=1)

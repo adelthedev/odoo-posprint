@@ -1,10 +1,17 @@
 #!/bin/bash
-# Creates the raw ESC/POS queues from env vars, then runs cupsd in the foreground.
-# Idempotent: lpadmin -p on an existing queue just updates it, so restarts are safe.
+# Creates one raw ESC/POS queue per PRINTER_<NAME>_URI env var (queue name =
+# <name> lowercased, e.g. PRINTER_RECEIPT_URI -> queue 'receipt'), then runs
+# cupsd in the foreground.
+# Idempotent: lpadmin -p on an existing queue just updates it, so restarts are
+# safe. Queues whose env var was removed are NOT deleted; drop them manually
+# with `lpadmin -x <queue>` if needed.
 set -euo pipefail
 
-: "${PRINTER_RECEIPT_URI:?PRINTER_RECEIPT_URI is required (e.g. socket://printer-ip:9100)}"
-: "${PRINTER_KITCHEN_URI:?PRINTER_KITCHEN_URI is required (e.g. socket://printer-ip:9100)}"
+mapfile -t printer_vars < <(compgen -e | grep -E '^PRINTER_[A-Z0-9_]+_URI$' | sort)
+if [ "${#printer_vars[@]}" -eq 0 ]; then
+    echo "No PRINTER_<NAME>_URI env vars set (e.g. PRINTER_RECEIPT_URI=socket://printer-ip:9100)" >&2
+    exit 1
+fi
 
 # lpadmin talks IPP to a running cupsd, so start it first, configure, then wait.
 /usr/sbin/cupsd -f &
@@ -31,8 +38,12 @@ make_queue() {
     echo "queue '$name' -> $uri"
 }
 
-make_queue receipt "$PRINTER_RECEIPT_URI"
-make_queue kitchen "$PRINTER_KITCHEN_URI"
+for var in "${printer_vars[@]}"; do
+    queue="${var#PRINTER_}"
+    queue="${queue%_URI}"
+    queue="$(echo "$queue" | tr '[:upper:]' '[:lower:]')"
+    make_queue "$queue" "${!var}"
+done
 
 lpstat -v
 

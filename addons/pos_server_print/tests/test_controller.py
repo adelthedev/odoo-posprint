@@ -22,7 +22,7 @@ class TestPosServerPrintController(TestPointOfSaleHttpCommon):
             'printer_type': 'server_cups',
             'cups_queue_name': 'receipt',
         })
-        cls.main_pos_config.server_receipt_printer_id = cls.printer
+        cls.main_pos_config.server_receipt_printer_ids = cls.printer
         cls.no_pos_user = cls.env['res.users'].create({
             'name': 'No PoS rights',
             'login': 'no_pos_user',
@@ -122,6 +122,12 @@ class TestPosServerPrintController(TestPointOfSaleHttpCommon):
             res = self._rpc('/pos_server_print/job', self._print_params(payload_type='pdf'))
             self.assertIn('error', res)
         mock_submit.assert_not_called()
+
+    def test_server_receipt_printers_loaded_to_frontend(self):
+        # Server receipt printers are not in config.printer_ids, so the stock
+        # loading domain would skip them; the picker needs their names.
+        domain = self.env['pos.printer']._load_pos_data_domain(None, self.main_pos_config)
+        self.assertIn(self.printer, self.env['pos.printer'].search(domain))
 
     def test_cashbox_requires_cashdrawer(self):
         self.main_pos_config.with_user(self.pos_user).open_ui()

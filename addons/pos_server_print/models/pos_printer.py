@@ -2,6 +2,7 @@ import base64
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+from odoo.fields import Domain
 
 from ..services import escpos
 
@@ -28,6 +29,16 @@ class PosPrinter(models.Model):
         string='Cash Drawer Connected',
         help="A cash drawer is plugged into this printer's DK port (opened via ESC p pulse).",
     )
+
+    @api.model
+    def _load_pos_data_domain(self, data, config):
+        # Stock POS only loads preparation printers (config.printer_ids); the
+        # frontend also needs the server receipt printers for the print-time
+        # picker (name shown in the selection popup).
+        return Domain.OR([
+            super()._load_pos_data_domain(data, config),
+            [('id', 'in', config.server_receipt_printer_ids.ids)],
+        ])
 
     @api.constrains('printer_type', 'cups_queue_name', 'dots_per_line')
     def _constrains_server_cups(self):

@@ -111,13 +111,21 @@ dithered raster. → Our printer overrides `processCanvas` to emit base64 **PNG*
 
 - New `printer_type` value **`server_cups`** on `pos.printer` + fields `cups_queue_name`,
   `dots_per_line` (default 576), `has_cashdrawer`.
-- Cashier receipt printer: new m2o **`pos.config.server_receipt_printer_id`**
+- Cashier receipt printer: new m2m **`pos.config.server_receipt_printer_ids`**
   (domain `printer_type = server_cups`), mirroring how `epson_printer_ip` lives on
-  pos.config; loaded to JS automatically (Q3).
+  pos.config; loaded to JS automatically (Q3). Originally an m2o
+  (`server_receipt_printer_id`), widened to m2m 2026-07-17 for the print-time
+  printer picker: with one printer configured receipts print straight to it,
+  with several the cashier picks in a SelectionPopup on every receipt print
+  (cancelling the popup cancels the print). The first printer in the list is
+  the default wired to `hardwareProxy.printer` for any other code path. The
+  printers themselves must be loaded to the frontend for the popup labels —
+  stock POS only loads `config.printer_ids`, so the module extends
+  `pos.printer._load_pos_data_domain` with the server receipt printers.
 - Client only ever sends the **pos.printer record id** — queue names/IPs never reach
   the browser (plan D5).
 - Controller validates: printer exists, is `server_cups`, and belongs to a pos.config
-  (via `pos_config_ids` or as `server_receipt_printer_id`) that has an **open
+  (via `pos_config_ids` or `server_receipt_printer_ids`) that has an **open
   session** — not necessarily the caller's own session, since several
   cashiers/tablets legitimately share one session.
 - CUPS server address comes from env `POS_PRINT_CUPS_HOST` (default `cups:631`).

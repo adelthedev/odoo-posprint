@@ -26,13 +26,18 @@ services:
       - odoo-web-data:/var/lib/odoo
     restart: unless-stopped
 
-  # Print spooler for pos_server_print. Owns the raw ESC/POS queues
-  # (`receipt`, `kitchen`), serialization, retries and job history.
+  # Print spooler for pos_server_print. Owns the raw ESC/POS queues,
+  # serialization, retries and job history. One queue is created per
+  # PRINTER_<NAME>_URI var in .env (see .env.example); the two below are only
+  # defaults so a fresh dev checkout works without a .env file.
   # Web UI on http://localhost:631 (host-local only).
   cups:
     build: ./docker/cups
     image: afghandish-cups
     container_name: odoo-cups
+    env_file:
+      - path: .env
+        required: false
     environment:
       PRINTER_RECEIPT_URI: ${PRINTER_RECEIPT_URI:-socket://escpos-emulator:9100}
       PRINTER_KITCHEN_URI: ${PRINTER_KITCHEN_URI:-socket://escpos-emulator:9100}
