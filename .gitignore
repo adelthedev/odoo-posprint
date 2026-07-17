@@ -1,2 +1,5 @@
 postgres-data
 postgres-data/*
+.env
+emulator-data/
+.DS_Store

@@ -1,0 +1,15 @@
+<odoo>
+    <record id="res_config_settings_view_form_inherit_server_print" model="ir.ui.view">
+        <field name="name">res.config.settings.form.server.print</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@id='pos_other_devices']" position="after">
+                <setting id="pos_server_receipt_printer" string="Server Receipt Printer"
+                         help="Print receipts through the Odoo server (CUPS) — works from any tablet browser.">
+                    <field name="pos_server_receipt_printer_id"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

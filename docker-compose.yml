@@ -11,10 +11,12 @@ services:
     restart: unless-stopped
 
   odoo:
-    image: odoo:19
+    build: ./docker/odoo
+    image: afghandish-odoo:19
     container_name: odoo-app
     depends_on:
       - db
+      - cups
     ports:
       - "80:8069"
       - "8072:8072"
@@ -22,6 +24,32 @@ services:
       - ./config:/etc/odoo
       - ./addons:/mnt/extra-addons
       - odoo-web-data:/var/lib/odoo
+    restart: unless-stopped
+
+  # Print spooler for pos_server_print. Owns the raw ESC/POS queues
+  # (`receipt`, `kitchen`), serialization, retries and job history.
+  # Web UI on http://localhost:631 (host-local only).
+  cups:
+    build: ./docker/cups
+    image: afghandish-cups
+    container_name: odoo-cups
+    environment:
+      PRINTER_RECEIPT_URI: ${PRINTER_RECEIPT_URI:-socket://escpos-emulator:9100}
+      PRINTER_KITCHEN_URI: ${PRINTER_KITCHEN_URI:-socket://escpos-emulator:9100}
+    ports:
+      # 6631 by default: macOS runs its own cupsd on 631.
+      - "127.0.0.1:${CUPS_WEB_PORT:-6631}:631"
+    restart: unless-stopped
+
+  # Dev-only fake ESC/POS printer: dumps every print job to ./emulator-data.
+  # Enable with: docker compose --profile dev up -d
+  escpos-emulator:
+    profiles: ["dev"]
+    build: ./docker/escpos-emulator
+    image: escpos-emulator
+    container_name: escpos-emulator
+    volumes:
+      - ./emulator-data:/data/jobs
     restart: unless-stopped
 
 volumes:

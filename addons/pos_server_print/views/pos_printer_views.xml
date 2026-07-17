@@ -1,0 +1,22 @@
+<odoo>
+    <record id="view_pos_printer_form_inherit_server_print" model="ir.ui.view">
+        <field name="name">pos.printer.form.server.print</field>
+        <field name="model">pos.printer</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_printer_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_test_print" type="object" string="Test Print"
+                            class="btn-primary" invisible="printer_type != 'server_cups'"
+                            help="Print a canned receipt through the full server path (CUPS queue)."/>
+                </header>
+            </xpath>
+            <field name="proxy_ip" position="after">
+                <field name="cups_queue_name" invisible="printer_type != 'server_cups'"
+                       required="printer_type == 'server_cups'"/>
+                <field name="dots_per_line" invisible="printer_type != 'server_cups'"/>
+                <field name="has_cashdrawer" invisible="printer_type != 'server_cups'"/>
+            </field>
+        </field>
+    </record>
+</odoo>
