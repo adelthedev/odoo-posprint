@@ -36,6 +36,10 @@ docker exec odoo-cups lpstat -v   # one queue per .env entry, correct URIs
 
 ## 4. Install and configure the module
 
+Replace `<prod-db>` with the production database name (`odoo.conf` doesn't pin
+one — check the login screen's database selector or
+`docker exec odoo-db psql -U odoo -l`).
+
 ```sh
 docker compose exec -T odoo odoo --db_host=db --db_user=odoo \
     --db_password=@fghanDish -d <prod-db> -i pos_server_print \
