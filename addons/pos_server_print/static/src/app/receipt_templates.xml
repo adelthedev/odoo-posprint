@@ -2,13 +2,21 @@
 <templates id="template" xml:space="preserve">
     <!-- Slim receipt: no logo, no self-invoicing QR block, no company
          address/contact footer, no "Powered by Odoo". Applies to both the
-         on-screen preview and the printed receipt (same template). -->
+         on-screen preview and the printed receipt (same template).
+
+         These extensions are applied lazily in the BROWSER the first time
+         OrderReceipt renders: a failing xpath crashes the receipt screen at
+         Validate with no server-side trace. Anchors must therefore exist in
+         every 19.0 build we run: the 'pos-receipt-qr' and 'footer-powered-by'
+         classes were only added upstream between builds 20260513 and 20260630,
+         so the QR block is matched by its t-if condition and the powered-by
+         footer by its older class pair instead. -->
     <t t-name="pos_server_print.ReceiptHeader" t-inherit="point_of_sale.ReceiptHeader" t-inherit-mode="extension">
         <xpath expr="//img[hasclass('pos-receipt-logo')]" position="replace"/>
     </t>
     <t t-name="pos_server_print.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
-        <xpath expr="//div[hasclass('pos-receipt-qr')]" position="replace"/>
+        <xpath expr="//div[@t-if='order.company.point_of_sale_use_ticket_qr_code and order.finalized']" position="replace"/>
         <xpath expr="//div[hasclass('pos-config-name')]/parent::div/parent::div" position="replace"/>
-        <xpath expr="//div[hasclass('footer-powered-by')]" position="replace"/>
+        <xpath expr="//div[hasclass('pos-receipt-order-data', 'text-center')]" position="replace"/>
     </t>
 </templates>
