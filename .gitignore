@@ -1,2 +1,8 @@
 postgres-data
 postgres-data/*
+.env
+emulator-data/
+.DS_Store
+__pycache__/
+*.pyc
+.playwright-mcp/

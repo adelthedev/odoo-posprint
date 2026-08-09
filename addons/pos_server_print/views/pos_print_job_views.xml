@@ -1,0 +1,87 @@
+<odoo>
+    <record id="view_pos_print_job_list" model="ir.ui.view">
+        <field name="name">pos.print.job.list</field>
+        <field name="model">pos.print.job</field>
+        <field name="arch" type="xml">
+            <list default_order="id desc">
+                <field name="create_date"/>
+                <field name="printer_id"/>
+                <field name="order_ref"/>
+                <field name="user_id" optional="show"/>
+                <field name="session_id" optional="hide"/>
+                <field name="cups_job_id" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'submitted'"
+                       decoration-danger="state == 'error'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pos_print_job_form" model="ir.ui.view">
+        <field name="name">pos.print.job.form</field>
+        <field name="model">pos.print.job</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_reprint" type="object" string="Reprint"
+                            class="btn-primary" invisible="not payload"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="printer_id"/>
+                            <field name="order_ref"/>
+                            <field name="payload_type"/>
+                            <field name="payload" filename="order_ref"/>
+                        </group>
+                        <group>
+                            <field name="create_date"/>
+                            <field name="user_id"/>
+                            <field name="session_id"/>
+                            <field name="cups_job_id"/>
+                            <field name="error" invisible="not error"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_pos_print_job_search" model="ir.ui.view">
+        <field name="name">pos.print.job.search</field>
+        <field name="model">pos.print.job</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="order_ref"/>
+                <field name="printer_id"/>
+                <filter string="Submitted" name="submitted" domain="[('state', '=', 'submitted')]"/>
+                <filter string="Error" name="error" domain="[('state', '=', 'error')]"/>
+                <separator/>
+                <filter string="Date" name="filter_create_date" date="create_date"/>
+                <group>
+                    <filter string="Printer" name="group_printer" domain="[]" context="{'group_by': 'printer_id'}"/>
+                    <filter string="Status" name="group_state" domain="[]" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_pos_print_job" model="ir.actions.act_window">
+        <field name="name">Print Jobs</field>
+        <field name="res_model">pos.print.job</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No print jobs yet</p>
+            <p>Every receipt or kitchen ticket printed through the server is logged here
+            and can be reprinted.</p>
+        </field>
+    </record>
+
+    <menuitem
+        name="Print Jobs"
+        id="menu_pos_print_job"
+        parent="point_of_sale.menu_point_of_sale"
+        action="action_pos_print_job"
+        sequence="100"/>
+</odoo>
