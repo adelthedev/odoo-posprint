@@ -11,9 +11,11 @@ browser-to-printer connection is needed, so tablets work regardless of browser
 LAN-access restrictions.
 """,
     'category': 'Sales/Point of Sale',
-    'version': '19.0.1.1.0',
+    'version': '19.0.1.2.0',
     'license': 'LGPL-3',
-    'depends': ['point_of_sale'],
+    # pos_restaurant: the receipt shows preset/floor/table, and our patches
+    # must load after its ReceiptHeader tableName patch.
+    'depends': ['point_of_sale', 'pos_restaurant'],
     'data': [
         'security/ir.model.access.csv',
         'views/pos_printer_views.xml',
